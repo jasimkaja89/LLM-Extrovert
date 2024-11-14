@@ -7,28 +7,20 @@ import random
 API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
 API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 
-# Define the fixed question with larger font and bold using Markdown for proper rendering
-QUESTION = "**Create a creative advertisement about a new solution to the storrowing problem.**"
 
-# Define extrovert prompts
 extrovert_prompts = [
-    f"{QUESTION} Provide a lively and high-energy message.",
-    f"{QUESTION} Create a bold, exciting advertisement.",
-    f"{QUESTION} Share an enthusiastic, vibrant ad idea.",
-    f"{QUESTION} Develop a high-energy promotional concept.",
-    f"{QUESTION} Propose a dynamic and thrilling ad message.",
-    f"{QUESTION} Present an engaging, energetic advertisement.",
-    f"{QUESTION} Craft an upbeat, extroverted promotional message.",
-    f"{QUESTION} Design a compelling, lively advertisement concept."
-] * 50  # Replicates to create a pool of 400 options when shuffled
+    "Create a lively and energetic ad addressing the storrowing problem.",
+    "Offer a bold, exciting solution to the storrowing problem.",
+    # Add remaining 98 unique prompts here...
+] * 4  # Repeats each unique prompt 4 times to make 400 prompts
 
-# Function to query the Hugging Face API with randomness for diversity
+# Function to query the Hugging Face API
 def query_huggingface(personality):
     headers = {"Authorization": f"Bearer {API_KEY}"}
 
     # Select a unique prompt variation based on personality type
     if personality == "Introvert":
-        prompt = random.choice(introvert_prompts)  # Ensure introvert prompts are defined
+        prompt = random.choice(introvert_prompts)
     elif personality == "Extrovert":
         prompt = random.choice(extrovert_prompts)
 
@@ -38,33 +30,43 @@ def query_huggingface(personality):
     # Check if the response is successful
     if response.status_code == 200:
         # Return only the generated text
-        return response.json()[0]['generated_text']
+        try:
+            return response.json()[0]['generated_text']
+        except (KeyError, IndexError):
+            return "Error: Unexpected response format. Please try again."
+    elif response.status_code == 401:
+        return "Error: Unauthorized. Please check your API key."
+    elif response.status_code == 429:
+        return "Error: Rate limit exceeded. Please wait and try again later."
     else:
-        return f"Error: {response.status_code}, {response.text}"
+        # General error message with specific status code
+        return f"Error {response.status_code}: {response.text}"
+
 
 def create_extrovert_interface():
     with gr.Blocks() as extrovert_interface:
-        # Display the Extrovert Profile heading
         gr.Markdown("# Extrovert Profile")
-        
+
         # Display instructions and question
         gr.Markdown("""
         **Instructions for Respondents**
-        
+
         Write your response to the following question or problem based on your interaction with the Large Language Model.
         Once you have completed your response, copy and paste the content into the Qualtrics survey and then submit the survey.
-        
-        """ + QUESTION)
-        
-        with gr.Row():
-            # Output area for the model-generated text
-            generated_advertisement = gr.Textbox(label="Generated Advertisement", lines=5)
-            # Button to generate the output
-            generate_button = gr.Button("Generate")
-            # Empty textbox for user to input their own definition
-            user_definition = gr.Textbox(label="Your Definition", lines=5, placeholder="Type your own response here based on the generated advertisement.")
 
-        # Connect generate button to the model function
+        """ + QUESTION)
+
+        with gr.Row():
+            # Input box at the top
+            user_definition = gr.Textbox(label="Input", lines=5, placeholder="Type your own response here based on the generated advertisement.")
+        with gr.Row():
+            # Output box below Input
+            generated_advertisement = gr.Textbox(label="Output", lines=5)
+        with gr.Row():
+            # Generate button at the bottom
+            generate_button = gr.Button("Generate")
+
+        # Connect generate button to the function to get model response
         generate_button.click(lambda: query_huggingface("Extrovert"), None, generated_advertisement)
     return extrovert_interface
 
