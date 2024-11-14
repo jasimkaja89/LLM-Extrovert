@@ -11,12 +11,17 @@ API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 QUESTION = "**Create a creative advertisement about a new solution to the storrowing problem.**"
 
 extrovert_prompts = [
-    "Create a lively and energetic ad addressing the storrowing problem.",
-    "Offer a bold, exciting solution to the storrowing problem.",
-    # Add remaining 98 unique prompts here...
-] * 4  # Repeats each unique prompt 4 times to make 400 prompts
+    f"{QUESTION} Provide a lively and high-energy message.",
+    f"{QUESTION} Create a bold, exciting advertisement.",
+    f"{QUESTION} Share an enthusiastic, vibrant ad idea.",
+    f"{QUESTION} Develop a high-energy promotional concept.",
+    f"{QUESTION} Propose a dynamic and thrilling ad message.",
+    f"{QUESTION} Present an engaging, energetic advertisement.",
+    f"{QUESTION} Craft an upbeat, extroverted promotional message.",
+    f"{QUESTION} Design a compelling, lively advertisement concept."
+] * 50  # Replicates to create a pool of 400 options when shuffled
 
-# Function to query the Hugging Face API
+# Function to query the Hugging Face API with randomness for diversity
 def query_huggingface(personality):
     headers = {"Authorization": f"Bearer {API_KEY}"}
 
@@ -45,30 +50,22 @@ def query_huggingface(personality):
         return f"Error {response.status_code}: {response.text}"
 
 
+# Create the Gradio interface for Extrovert responses
 def create_extrovert_interface():
     with gr.Blocks() as extrovert_interface:
         gr.Markdown("# Extrovert Profile")
 
-        # Display instructions and question
-        gr.Markdown("""
-        **Instructions for Respondents**
-
-        Write your response to the following question or problem based on your interaction with the Large Language Model.
-        Once you have completed your response, copy and paste the content into the Qualtrics survey and then submit the survey.
-
-        """ + QUESTION)
+        # Display question prompt as instructions
+        gr.Markdown("### Instructions:\n\nPlease respond to the following prompt:\n\n" + QUESTION)
 
         with gr.Row():
-            # Input box at the top
-            user_definition = gr.Textbox(label="Input", lines=5, placeholder="Type your own response here based on the generated advertisement.")
+            user_input = gr.Textbox(label="INPUT", placeholder="Type your response here.", lines=4)
         with gr.Row():
-            # Output box below Input
-            generated_advertisement = gr.Textbox(label="Output", lines=5)
+            generated_advertisement = gr.Textbox(label="OUTPUT", lines=4)
         with gr.Row():
-            # Generate button at the bottom
             generate_button = gr.Button("Generate")
 
-        # Connect generate button to the function to get model response
+        # Button to trigger the generation
         generate_button.click(lambda: query_huggingface("Extrovert"), None, generated_advertisement)
     return extrovert_interface
 
