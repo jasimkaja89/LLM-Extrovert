@@ -7,6 +7,8 @@ import random
 API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
 API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 
+# Define the fixed question with larger font and bold using Markdown for proper rendering
+QUESTION = "**Create a creative advertisement about a new solution to the storrowing problem.**"
 
 extrovert_prompts = [
     "Create a lively and energetic ad addressing the storrowing problem.",
