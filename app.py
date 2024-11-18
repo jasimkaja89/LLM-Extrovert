@@ -7,37 +7,33 @@ import random
 API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
 API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 
-# Extensive lists of nuanced prompts for introverts and extroverts
+# Extensive lists of nuanced prompts for introverts and extroverts with added context
 introvert_prompts = [
-    "Offer a quiet, reflective message for a solution to the storrowing problem.",
-    "Develop a subtle, insightful advertisement for addressing the storrowing problem.",
-    "Provide a calm and thought-provoking promotional angle for solving the storrowing problem.",
-    "Share an introspective, thoughtful message to creatively address storrowing.",
-    "Present a serene, deep concept for overcoming the storrowing challenge.",
-    "Propose a gentle, introspective advertisement idea to tackle the storrowing issue.",
-    "Craft a soothing and thoughtful promotional idea for resolving storrowing.",
-    "Design an understated, reflective storyboard for combating storrowing."
-] * 50  # Creates a pool of 400 options when shuffled
+    "Provide a thoughtful and serene advertisement for addressing the 'storrowing problem,' a metaphorical challenge representing creative blockages in generating ideas.",
+    "Develop an introspective solution to the 'storrowing problem,' which symbolizes overcoming mental barriers in creativity.",
+    "Share an introspective, reflective storyboard for addressing the 'storrowing problem' as a creative challenge.",
+    "Propose a calm and subtle advertisement concept to solve the 'storrowing problem,' a representation of creative roadblocks.",
+    "Craft a gentle and insightful promotional idea for resolving the 'storrowing problem,' representing creative stagnation."
+] * 50  # Repeat for a larger pool of options
 
 extrovert_prompts = [
-    "Provide a lively and high-energy concept for a solution to the storrowing problem.",
-    "Create a bold, exciting advertisement to address storrowing.",
-    "Share an enthusiastic, vibrant storyboard idea to tackle storrowing.",
-    "Develop a high-energy promotional concept for solving storrowing.",
-    "Propose a dynamic and thrilling storyboard to combat the storrowing problem.",
-    "Present an engaging, energetic advertisement to solve storrowing.",
-    "Craft an upbeat, extroverted promotional angle for addressing the storrowing issue.",
-    "Design a compelling, lively concept for resolving storrowing."
-] * 50  # Creates a pool of 400 options when shuffled
+    "Design an energetic and engaging storyboard for tackling the 'storrowing problem,' a creative challenge requiring innovative thinking.",
+    "Propose a high-energy promotional idea to resolve the 'storrowing problem,' symbolizing breaking through creative barriers.",
+    "Create a bold and exciting advertisement to address the 'storrowing problem,' representing a need for fresh ideas.",
+    "Share a dynamic and thrilling storyboard for combating the 'storrowing problem,' a metaphorical challenge in creativity.",
+    "Present a vibrant and enthusiastic promotional concept to overcome the 'storrowing problem' and foster innovation."
+] * 50  # Repeat for a larger pool of options
 
-# Function to query the Hugging Face API with improved output handling
+# Function to query the Hugging Face API with contextual prompts
 def query_huggingface(personality):
     headers = {"Authorization": f"Bearer {API_KEY}"}
+    context = "The 'storrowing problem' is a metaphorical challenge representing creative blocks in advertising."
     prompt = random.choice(introvert_prompts if personality == "Introvert" else extrovert_prompts)
+    full_prompt = f"{context}\n\n{prompt}"
 
     try:
         # Make the API request
-        response = requests.post(API_URL, headers=headers, json={"inputs": prompt})
+        response = requests.post(API_URL, headers=headers, json={"inputs": full_prompt})
         response.raise_for_status()  # Raise an error for bad HTTP status codes
 
         # Extract and return the generated text
@@ -46,7 +42,7 @@ def query_huggingface(personality):
             output_text = result[0]['generated_text']
 
             # Remove the original prompt from the generated text if present
-            clean_output = output_text.replace(prompt, "").strip()
+            clean_output = output_text.replace(full_prompt, "").strip()
             return clean_output
         else:
             return "Error: Unexpected response format from the model. Please try again."
@@ -61,18 +57,18 @@ def query_huggingface(personality):
 def create_interface(profile_title, personality):
     with gr.Blocks() as interface:
         gr.Markdown(f"## {profile_title}")
-        
-        # Add revised instructions
+
+        # Instructions for users
         gr.Markdown("""
-        There is a problem called **"Storrowing Problem"**. Use the AI tool below to understand the problem and find a solution for a creative advertisement to solve this. 
+        There is a problem called **"Storrowing Problem"**. Use the AI tool below to understand the problem and find a solution for a creative advertisement to solve this.
 
         ### Instructions:
-        The AI tool cannot create a full advertisement. A broad storyboard of how the advertisement would look would be sufficient. You would have to interact with the AI tool below to understand the problem and ask the right questions and give appropriate prompts to generate the outline/storyboard of an effective advertisement. 
+        The AI tool cannot create a full advertisement. A broad storyboard of how the advertisement would look would be sufficient. You would have to interact with the AI tool below to understand the problem and ask the right questions and give appropriate prompts to generate the outline/storyboard of an effective advertisement.
 
         Whenever you are ready, start giving the inputs in the input box and click on "Generate". The AI tool will generate answers to your question. When you are happy with the solution, paste the solution in the Qualtrics link.
         """)
 
-        # Create input and output boxes
+        # Input and output components
         with gr.Row():
             user_input = gr.Textbox(label="INPUT", placeholder="Type your question or prompt here.", lines=4)
         with gr.Row():
@@ -89,7 +85,13 @@ def create_interface(profile_title, personality):
 
     return interface
 
-
 print("Launching Profile 2 Interface...")
-profile_2_interface = create_interface("Profile 2", "Extrovert")
+profile_2_interface = create_interface("Profile 2: Extrovert Approach", "Extrovert")
 profile_2_interface.launch(server_name="0.0.0.0", server_port=7881)
+
+
+
+
+
+
+
