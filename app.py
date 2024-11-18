@@ -86,7 +86,7 @@ def create_interface(profile_title, personality):
     return interface
 
 print("Launching Profile 2 Interface...")
-profile_2_interface = create_interface("Profile 2: Extrovert Approach", "Extrovert")
+profile_2_interface = create_interface("Profile 2", "Extrovert")
 profile_2_interface.launch(server_name="0.0.0.0", server_port=7881)
 
 
